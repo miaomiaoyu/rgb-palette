@@ -79,9 +79,14 @@
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.error) {
+                        console.error("Error:", data.error); // Print error to the console
                         alert(data.error);
                         return;
                     }
+
+                    // Print the entire response data to the console
+                    console.log("Response Data:", data);
+
                     // Display the extracted colors
                     colorContainer.innerHTML = "";
                     data.colors.forEach((color) => {
@@ -94,10 +99,13 @@
                         colorInfo.className = "color-info";
                         colorInfo.textContent = `RGB: ${color[0]}, ${color[1]}, ${color[2]}`;
                         colorContainer.appendChild(colorInfo);
+
+                        // Print each color to the console
+                        console.log(`Color: RGB(${color[0]}, ${color[1]}, ${color[2]})`);
                     });
                 })
                 .catch((error) => {
-                    console.error("Error:", error);
+                    console.error("Fetch Error:", error); // Print fetch errors to the console
                 });
         }
     </script>
