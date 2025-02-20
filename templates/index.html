@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image RGB Palette App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .upload-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .color-display {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .color-box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            border: 1px solid #000;
+        }
+        .color-info {
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image RGB Palette App</h1>
+    <div class="upload-container">
+        <input type="file" id="imageUpload" accept="image/*" />
+        <br /><br />
+        <label for="nColors">Number of Colors:</label>
+        <input type="number" id="nColors" min="2" max="20" value="10" />
+        <br /><br />
+        <button onclick="processImage()">Extract Colors</button>
+    </div>
+    <div id="imageContainer" style="text-align: center; margin-top: 20px;"></div>
+    <div id="colorContainer" class="color-display"></div>
+
+    <script>
+        function processImage() {
+            const fileInput = document.getElementById("imageUpload");
+            const nColors = document.getElementById("nColors").value;
+            const imageContainer = document.getElementById("imageContainer");
+            const colorContainer = document.getElementById("colorContainer");
+
+            if (!fileInput.files[0]) {
+                alert("Please upload an image first.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("image", file);
+            formData.append("n_colors", nColors);
+
+            // Display the uploaded image
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                imageContainer.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image" style="max-width: 100%; height: auto;" />`;
+            };
+            reader.readAsDataURL(file);
+
+            // Send the image to the backend for processing
+            fetch("/process_image", {
+                method: "POST",
+                body: formData,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    // Display the extracted colors
+                    colorContainer.innerHTML = "";
+                    data.colors.forEach((color) => {
+                        const colorBox = document.createElement("div");
+                        colorBox.className = "color-box";
+                        colorBox.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                        colorContainer.appendChild(colorBox);
+
+                        const colorInfo = document.createElement("div");
+                        colorInfo.className = "color-info";
+                        colorInfo.textContent = `RGB: ${color[0]}, ${color[1]}, ${color[2]}`;
+                        colorContainer.appendChild(colorInfo);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
+        }
+    </script>
+</body>
+</html>
